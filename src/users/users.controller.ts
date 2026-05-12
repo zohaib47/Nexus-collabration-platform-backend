@@ -13,7 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '@/auth/decorators/roles.decorators';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from '@/auth/guard/roles.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
 
 @Controller('users')
 export class UsersController {

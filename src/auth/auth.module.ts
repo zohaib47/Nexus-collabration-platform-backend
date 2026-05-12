@@ -4,8 +4,8 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '@/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtStrategy } from './jwt.strategy';
-import { RolesGuard } from './guard/roles.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { RolesGuard } from './guards/roles.guard';
 import { PassportModule } from '@nestjs/passport'; // Import already there
 
 @Module({

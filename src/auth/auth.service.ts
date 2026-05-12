@@ -32,7 +32,6 @@ export class AuthService {
     // User ko dhoondein
     const user = await this.usersService.findOneByEmail(email);
     
-    // Agar user nahi mila ya password match nahi hua
     if (!user || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException('Invalid credentials (Email ya Password galat hai)');
     }

@@ -15,7 +15,6 @@ export class User extends Document {
   @Prop({ required: true, enum: ['investor', 'entrepreneur'], default: 'entrepreneur' })
   role!: string;
 
-  // Milestone 2: Profiles
   @Prop()
   bio!: string;
 
@@ -41,6 +40,12 @@ investmentGoal!: string;
 
 @Prop({ default: Date.now })
 createdAt!: Date;
+
+@Prop({ default: 0 })
+balance!: number;
+
+@Prop({ default: 'USD' })
+currency!: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

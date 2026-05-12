@@ -5,6 +5,11 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
+import { MeetingsModule } from './meetings/meetings.module';
+import { CloudinaryService } from './config/cloudinary.service';
+import { CloudinaryProvider } from './config/cloudinary.config';
+import { DocumentsModule } from './documents/documents.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -36,8 +41,12 @@ import { AuthModule } from './auth/auth.module';
     
     UsersModule,
     AuthModule,
+    MeetingsModule,
+    DocumentsModule,
+    PaymentsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, ],
+  providers: [AppService, CloudinaryProvider, CloudinaryService],
+  exports: [CloudinaryProvider, CloudinaryService],
 })
 export class AppModule {}
