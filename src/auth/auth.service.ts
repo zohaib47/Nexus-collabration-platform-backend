@@ -3,13 +3,16 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { JwtService } from '@nestjs/jwt'; // 1. JwtService import karein
+import { OtpService } from '@/common/services/otp.service';
+import { MailService } from '@/common/services/mail.service';
 
 @Injectable()
 export class AuthService {
-  // 2. Constructor mein JwtService inject karein
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private otpService: OtpService,   
+    private mailService: MailService,
   ) {}
 
   async register(dto: CreateUserDto) {
@@ -28,22 +31,20 @@ export class AuthService {
   }
 
   // 3. Login Logic yahan add karein
+
   async login(email: string, pass: string) {
-    // User ko dhoondein
     const user = await this.usersService.findOneByEmail(email);
     
     if (!user || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException('Invalid credentials (Email ya Password galat hai)');
     }
 
-    // Token ke liye data (payload) tayyar karein
     const payload = { 
       sub: user._id, 
       email: user.email, 
       role: user.role 
     };
 
-    // Token return karein aur user ki basic info bhi
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
@@ -53,4 +54,39 @@ export class AuthService {
       },
     };
   }
+
+  // otp genrate and send email
+  async sendTwoFactorCode(userId: string) {
+    const user = await this.usersService.findOne(userId);
+    if (!user) throw new UnauthorizedException('User nahi mila');
+
+    const otp = this.otpService.generateOtp();
+    console.log(`[DEBUG] Generated OTP for User: ${otp}`);
+    const expiry = this.otpService.getExpiryTime(5); 
+
+    await this.usersService.updateOtp(userId, otp, expiry);
+
+    await this.mailService.sendOTP(user.email, otp);
+
+    return { message: 'OTP aapki email par bhej diya gaya hai.' };
+  }
+
+
+  // otp verify  
+async verifyTwoFactorCode(userId: string, code: string) {
+  const user = await this.usersService.findOne(userId);
+
+
+  if (!user) {
+    throw new UnauthorizedException('User nahi mila!');
+  }
+
+  if (!user.otp || user.otp !== code || this.otpService.isOtpExpired(user.otpExpires!)) {
+    throw new UnauthorizedException('OTP galat hai ya expire ho chuka hai');
+  }
+
+  await this.usersService.updateOtp(userId, null, null);
+
+  return { message: 'Verification kamyab rahi!' };
+}
 }

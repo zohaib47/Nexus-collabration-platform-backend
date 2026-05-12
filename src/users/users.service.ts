@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
@@ -38,4 +38,31 @@ async findOneByEmail(email: string): Promise<User | null> {
   async remove(id: string) {
     return await this.userModel.findByIdAndDelete(id).exec();
   }
+
+  async updateOtp(userId: string, otp: string | null, expiry: Date | null) {
+  return await this.userModel.findByIdAndUpdate(userId, {
+    otp: otp,
+    otpExpires: expiry,
+  }, { returnDocument: 'after' });
+ }
+
+//  verify OTP logic
+
+async verifyOTP(email: string, otp: string) {
+  const user = await this.userModel.findOne({ email });
+
+  if (!user) throw new NotFoundException('User nahi mila');
+
+  if (user.otp !== otp || !user.otpExpires || user.otpExpires < new Date()) {
+    throw new BadRequestException('OTP galat hai ya expire ho chuka hai');
+  }
+
+  user.isVerified = true;
+  user.otp = null;
+  user.otpExpires = null;
+
+  await user.save();
+  return { message: 'Account verified successfully!' };
+}
+
 }

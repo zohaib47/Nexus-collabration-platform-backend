@@ -7,6 +7,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { PassportModule } from '@nestjs/passport'; // Import already there
+import { OtpService } from '@/common/services/otp.service';
+import { MailService } from '@/common/services/mail.service';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { PassportModule } from '@nestjs/passport'; // Import already there
     }),
   ],
 
-  providers: [AuthService, JwtStrategy, RolesGuard],
+  providers: [AuthService, JwtStrategy, RolesGuard, OtpService, MailService,],
   controllers: [AuthController],
   exports: [AuthService, JwtStrategy, PassportModule] 
 })

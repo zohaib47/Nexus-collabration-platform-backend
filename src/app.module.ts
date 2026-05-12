@@ -10,6 +10,8 @@ import { CloudinaryService } from './config/cloudinary.service';
 import { CloudinaryProvider } from './config/cloudinary.config';
 import { DocumentsModule } from './documents/documents.module';
 import { PaymentsModule } from './payments/payments.module';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { APP_GUARD, Reflector } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -46,7 +48,13 @@ import { PaymentsModule } from './payments/payments.module';
     PaymentsModule,
   ],
   controllers: [AppController, ],
-  providers: [AppService, CloudinaryProvider, CloudinaryService],
+  providers: [AppService, CloudinaryProvider, CloudinaryService,
+    Reflector, 
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
   exports: [CloudinaryProvider, CloudinaryService],
 })
 export class AppModule {}

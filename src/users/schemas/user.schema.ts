@@ -21,7 +21,6 @@ export class User extends Document {
   @Prop({ type: [String] })
   skills!: string[];
 
-  // Investment/Startup History (JSON object)
   @Prop({ type: Object })
   history!: {
     projects: string[];
@@ -32,20 +31,28 @@ export class User extends Document {
   @Prop({ default: true })
   isActive!: boolean;
 
-@Prop()
-startupHistory!: string;
+  @Prop()
+  startupHistory!: string;
 
-@Prop()
-investmentGoal!: string;
+  @Prop()
+  investmentGoal!: string;
 
-@Prop({ default: Date.now })
-createdAt!: Date;
+  @Prop({ default: 0 })
+  balance!: number;
 
-@Prop({ default: 0 })
-balance!: number;
+  @Prop({ default: 'USD' })
+  currency!: string;
 
-@Prop({ default: 'USD' })
-currency!: string;
+  // --- Milestone 7: Security Fields ---
+  
+  @Prop({ default: false })
+  isVerified!: boolean;
+
+  @Prop({ type: String, default: null })
+  otp!: string | null;
+
+  @Prop({ type: Date, default: null })
+  otpExpires!: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
