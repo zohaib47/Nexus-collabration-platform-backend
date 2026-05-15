@@ -12,6 +12,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { PaymentsModule } from './payments/payments.module';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { APP_GUARD, Reflector } from '@nestjs/core';
+import { PitchesModule } from './pitches/pitches.module';
 
 @Module({
   imports: [
@@ -46,14 +47,15 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
     MeetingsModule,
     DocumentsModule,
     PaymentsModule,
+    PitchesModule,
   ],
   controllers: [AppController, ],
   providers: [AppService, CloudinaryProvider, CloudinaryService,
     Reflector, 
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RolesGuard,
+    // },
   ],
   exports: [CloudinaryProvider, CloudinaryService],
 })

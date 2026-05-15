@@ -30,6 +30,14 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  // UsersController ke andar add karein
+
+@Get('investors')
+@UseGuards(AuthGuard('jwt')) 
+async findInvestors() {
+  return this.usersService.findInvestors();
+}
+
   @Get('investor-only')
   @UseGuards(AuthGuard('jwt'), RolesGuard) 
   @Roles('investor') 

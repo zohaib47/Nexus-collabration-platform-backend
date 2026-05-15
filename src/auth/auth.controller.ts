@@ -14,7 +14,8 @@ export class AuthController {
 
   @Post('login')
 async login(@Body() body: any) {
-  return this.authService.login(body.email, body.password);
+  console.log('Login Request Body:', body);
+  return this.authService.login(body.email, body.password, body.role);
 }
 
 @UseGuards(JwtAuthGuard) 

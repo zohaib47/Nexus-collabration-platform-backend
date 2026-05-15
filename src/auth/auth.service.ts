@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { JwtService } from '@nestjs/jwt'; // 1. JwtService import karein
+import { JwtService } from '@nestjs/jwt';
 import { OtpService } from '@/common/services/otp.service';
 import { MailService } from '@/common/services/mail.service';
 
@@ -30,32 +30,32 @@ export class AuthService {
     });
   }
 
-  // 3. Login Logic yahan add karein
-
-  async login(email: string, pass: string) {
+  async login(email: string, pass: string, requestedRole: string) {
+    // 1. Database se user dhoondein
     const user = await this.usersService.findOneByEmail(email);
     
+    // 2. Email aur Password check karein
     if (!user || !(await bcrypt.compare(pass, user.password))) {
       throw new UnauthorizedException('Invalid credentials (Email ya Password galat hai)');
     }
 
-    const payload = { 
-      sub: user._id, 
-      email: user.email, 
-      role: user.role 
-    };
+    // 3. Safety Check: Agar frontend se role nahi aaya (undefined fix)
+    if (!requestedRole) {
+      throw new BadRequestException('Role selection zaroori hai!');
+    }
 
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        role: user.role,
-      },
-    };
+    // 4. Role Validation (Case-Insensitive)
+    if (user.role.toLowerCase() !== requestedRole.toLowerCase()) {
+      console.log(`Role Mismatch! DB: ${user.role}, Request: ${requestedRole}`); 
+      throw new UnauthorizedException(
+        `Aapka account as an ${user.role} registered hai, ${requestedRole} nahi.`
+      );
+    }
+
+    // Agar sab theek hai toh token return karein
+    return this.generateToken(user);
   }
 
-  // otp genrate and send email
   async sendTwoFactorCode(userId: string) {
     const user = await this.usersService.findOne(userId);
     if (!user) throw new UnauthorizedException('User nahi mila');
@@ -65,28 +65,41 @@ export class AuthService {
     const expiry = this.otpService.getExpiryTime(5); 
 
     await this.usersService.updateOtp(userId, otp, expiry);
-
     await this.mailService.sendOTP(user.email, otp);
 
     return { message: 'OTP aapki email par bhej diya gaya hai.' };
   }
 
+  async verifyTwoFactorCode(userId: string, code: string) {
+    const user = await this.usersService.findOne(userId);
 
-  // otp verify  
-async verifyTwoFactorCode(userId: string, code: string) {
-  const user = await this.usersService.findOne(userId);
+    if (!user) {
+      throw new UnauthorizedException('User nahi mila!');
+    }
 
+    if (!user.otp || user.otp !== code || this.otpService.isOtpExpired(user.otpExpires!)) {
+      throw new UnauthorizedException('OTP galat hai ya expire ho chuka hai');
+    }
 
-  if (!user) {
-    throw new UnauthorizedException('User nahi mila!');
+    await this.usersService.updateOtp(userId, null, null);
+    return { message: 'Verification kamyab rahi!' };
   }
 
-  if (!user.otp || user.otp !== code || this.otpService.isOtpExpired(user.otpExpires!)) {
-    throw new UnauthorizedException('OTP galat hai ya expire ho chuka hai');
+  async generateToken(user: any) {
+    const payload = { 
+      email: user.email, 
+      sub: user._id || user.id, 
+      role: user.role 
+    };
+    
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user._id || user.id,
+        email: user.email,
+       fullName: user.fullName,
+        role: user.role
+      }
+    };
   }
-
-  await this.usersService.updateOtp(userId, null, null);
-
-  return { message: 'Verification kamyab rahi!' };
-}
 }

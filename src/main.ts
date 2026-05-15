@@ -31,6 +31,13 @@ app.useGlobalPipes(new ValidationPipe({
 const document = SwaggerModule.createDocument(app, config);
 SwaggerModule.setup('api/docs', app, document);
 
+
+app.enableCors({
+    origin: 'http://localhost:5173', 
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   await app.listen(port);
   logger.log(`🚀 Nexus Server is running on: http://localhost:${port}`);
   console.log(`your server is running on port ${port}`)

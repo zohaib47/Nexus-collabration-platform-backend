@@ -21,6 +21,10 @@ export class UsersService {
   }
 
  
+async findInvestors() {
+  return this.userModel.find({ role: 'investor' }).exec(); 
+}
+
 async findOneByEmail(email: string): Promise<User | null> {
   return await this.userModel.findOne({ email }).exec();
 }
